@@ -29,10 +29,93 @@ M-x glitcherature-mode
 Usage
 -----
 
-Glitcherature key commands usually work on the text in the region or after the point.
+Glitcherature key commands work on the text in the region. Select the text you wish to modify before using them.
 
 Glitcherature key commands start with C-c C-g.
 
 The prefix argument usually supplies a probability, but may be used to supply a count.
 
 See the documentation for each function for more details.
+
+An Example (Ulysses - http://www.gutenberg.org/ebooks/4300)
+-----------------------------------------------------------
+
+Uly_R_
+
+ STATELY, plump Buck Mulligan came from the STAIRHEAD, BEARING A bowl of LATHER on which A MIRROR AND a RAZOR LAY CROSSED. A YELLOW DRESSINGGOWN, ungirdled, was SUSTAINED GENTLY BEHIND him ON THE MILD morning AIR. He HELD THE bowl ALOFT and INTONED:
+
+—Introibo AD ALTARE DEI.
+
+HALTED, HE PEERED down THE DARK winding stairs AND CALLED out coarsely:
+
+—Come up, Kinch! Come up, you fearful jesuit!
+
+Solemwly he came fo_ard awd mouw_d the rouwd guwre_t. He f__ _ut awd ble___ gravely thri_ the tower. the _urrouwdiwg lawd awd the _aki wg mouwtaiw _. Thew. ca_hiwg _ight of S_phew Dedalu_. he bewt toward_ him awd made r_id cro__e_ iw the _ r. gurgl iwg iw hi_ thr_t awd _hakiwg hi_ hed. Stephew _lu_. di_J
+
+Buck Mulligan peeped an instant under the mirror and then covered the bowl smartly.
+
+—Back to barracks! he said sternly.
+
+He added in a preacher's tone:
+___*_****)**%)*%*)***_**__%_*_))_*_%_%%_)*_*)%))_%)_)*_%*%%_%%)_**__)__*%_%%%)%_
+—For this, O dearly beloved, is the genuine Christine: body and soul and blood and ouns. Slow music, please. Shut your eyes, gents. One moment. A little trouble about those white corpuscles. Silence, all.
+
+He peered sideways up and gave a long slow whistle of call, then paused awhile in rapt attention, his even white teeth glistening here and there with gold points. 010000110110100001110010011110010111001101101111011100110111010001101111011011010110111101110011. Two strong shrill whistles answered through the calm.
+
+—Thanks, old chap, he cried briskly. That will do nicely. Switch off the current, will you?
+%*))__)*%)**_**%*))%%)*)**%_)__)**%%%%_*%__)_**)___)))**%__%*))_)%*_%)*)_*%%*)%*
+HE SKIPPED OFF the gunrest and looked GRAVELY at his watcher, gathering ABOUT HIS LEGS THE LOOSE FOLDS OF his gown. THE PLUMP shadowed face and SULLEN oval JOWL recalled A PRELATE, patron OF ARTS in the MIDDLE AGES. A PLEASANT SMILE broke quietly OVER his lips.
+
+—The mockery of it! he said gaily. Your absurd name, an ancient C_ek
+!
+
+H£ p[]1nt£d h1s f1ng£r 1n fr1£ndly j£st /\nd w£nt []v£r t[] th£ p/\r/\p£t, l/\|_|gh1ng t[] h1ms£lf. St£ph£n D£d/\l|_|s st£pp£d |_|p, f[]ll[]w£d h1m w£/\r1ly h/\lfw/\y /\nd s/\t d[]wn []n th£ £dg£ []f th£ g|_|nr£st, w/\tch1ng h1m st1ll /\s h£ pr[]pp£d h1s m1rr[]r []n th£ p/\r/\p£t, d1pp£d th£ br|_|sh 1n th£ b[]wl /\nd l/\th£r£d ch££ks /\nd n£ck.
+
+Bμck Mμll|g/-\n's g/-\y v0|c€ w€nt 0n.
+?::?:<?<<:<"?"""????:??<:?"::<??"??"?":":"<""""?:?<":"?"""::""?:?<:"<"":??:":"<<
+—My-- ==name-- ==is-- ==absurd-- ==too:-- ==Malachi-- ==Mulligan,-- ==two-- ==dactyls.-- ==But-- ==it-- ==has-- ==a-- ==Hellenic-- ==ring,-- ==hasn't-- ==it?-- ==Tripping-- ==and-- ==sunny-- ==like-- ==the-- ==buck-- ==himself.-- ==We-- ==must-- ==go-- ==to-- ==Athens.-- ==Will-- ==you-- ==come-- ==if-- ==I-- ==can-- ==get-- ==the-- ==aunt-- ==to-- ==fork-- ==out-- ==twenty-- ==quid?
+<<<"???<?<<::"":?"<???<<:?<"<<?:?"::<:<:"?<?:?<??<::<"<<"<<:<<"::?"<<"<<<<"<?<"<
+
+He laid the brush aside and, laughing with delight, cried:
+
+—Will he come? The jejune jesuit!
+
+CeaSInG, hE BeGAn TO SHaVe wItH cARE.
+
+—Tell me, Mulligan, Stephen said quietly.
+
+—Yes, my 1o\\//3?
+
+—How long is Haines going to stay in this tower?
+
+010000100111010101100011011010110010000001001101011101010110110001101100011010010110011101100001011011100010000001110011011010000110111101110111011001010110010000100000011000010010000001110011011010000110000101110110011001010110111000100000011000110110100001100101011001010110101100100000011011110111011001100101011100100010000001101000011010010111001100100000011100100110100101100111011010000111010000100000011100110110100001101111011101010110110001100100011001010111001000101110
+
+—God, `|sn't he dreadful? he said )=ra~kly. A pon∂erous Saxon. He thinks you're not a gentleman. God, these bloØdy E~glis)-(! Bursting with money and indigestion. Because he comes from Oxford. You know, Dedalus, you have the real Oxford manner. He can't make you out. O, my name for you is the best: Kinch, the knife-blade.
+
+He shaved warily over his chin.
+
+—He WAS raving all night about A black PANTHER, Stephen SAID. Where IS his GUNCASE?
+
+—A woful lunatic! Mulligan said. Were you in a funk?|=-=_|||-_---_-=_=||_=_===_-|_-_-|_|=||-__-|--_=|-||_=_=-=-==|-|=|-=|-||_-=-__=-
+
+--=_||_-__-_-=|-=_=_=__||__----_|_-_---=_==--|--=_-=--|=__-_|__|_-_-_||_==---_=-—I was, St3ph3n s@!d w!th 3n3rgy @nd gr()w!ng f3@r. Out here in the dark with a man I don't know raving and moaning to himself about shooting a black panther. You saved men from drowning. I'm not a hero, however. If he stays on here I am off.
+
+Buck.Mulligan..frowned.at...the.lather..on...his..razorblade...He.....hopped.down..from.....his.perch...and..began....to.....search....his....trouser.pockets..hastily.
+
+—Scutter! he cried thickly.
+
+H3 c@m3 ()v3r t() th3 g\/nr3st @nd, thr\/st!ng @ h@nd !nt() St3ph3n's \/pp3r p()ck3t, s@!d:
+
+—Lend us a loan of your noserag to wipe my razor.
+
+Stephen----suffered----him----to----pull--out--and---hold--up-on------show-----by---its--corner---a----dirty------crumpled------handkerchief.--Buck----Mulligan--wiped-----the--razorblade-----neatly.-Then,---gazing------over---the--handkerchief,-he--said:
+
+000101000101010001101000011001010010000001100010011000010111001001100100001001110111001100100000011011100110111101110011011001010111001001100001011001110010000100100000010000010010000001101110011001010111011100100000011000010111001001110100001000000110001101101111011011000110111101110101011100100010000001100110011011110111001000100000011011110111010101110010001000000100100101110010011010010111001101101000001000000111000001101111011001010111010001110011001110100010000001110011011011100110111101110100011001110111001001100101011001010110111000101110001000000101100101101111011101010010000001100011011000010110111000100000011000010110110001101101011011110111001101110100001000000111010001100001011100110111010001100101001000000110100101110100001011000010000001100011011000010110111000100111011101000010000001111001011011110111010100111111
+
+^_#_!#!^&*)_)&@_((^%^()^_*$#(#*^^@)#^(@&^@_^$)*&^#@*$$*&!((&)&%_*&^^*^)^($)&)(#_
+
+He mounted to the parapet again and gazed out over Dublin bay, his fair oakpale hair stirring slightly.
+
+)^*%#%*#@$**&&)%%&!#^*&!(^_%)!)(!^)&#)!(*&^*(*^#)@^&*)@*#_^^*#(&&!^&(#&@#%^##)@#
+
+—God! he said quietly. I$|\|'7 7|-|3 $3@ vv|-|@7 A16`/ (@11$ !7: @ 6®3`/ $vv337 44()7|-|3®? T|-|3 $|\|()76®33|\| $3@. T|-|3 $(®()7\/447!6|-|73|\|!|\|6 $3@. E|*! ()!|\|()|*@ |*()|\|7()|\|. A|-|, D3|)@1\/$, 7|-|3 G®33|<$! I 44\/$7 73@(|-| `/()\/. Y()\/ 44\/$7 ®3@|) 7|-|344 !|\| 7|-|3 ()®!6!|\|@1. T|-|@1@77@! T|-|@1@77@! S|-|3 !$ ()\/® 6®3@7 $vv337 44()7|-|3®. C()443 @|\||) 1()()|<. 

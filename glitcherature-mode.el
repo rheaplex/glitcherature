@@ -281,9 +281,10 @@
       (let ((column (random glitcherature-leet-kinds-count)))
         (while (re-search-forward "[aeiou]" nil t)
           (if (= (random probability) 0)
-              (replace-match (nth column
-                                  (assoc (match-string 0)
-                                         glitcherature-leet-lookup)))))))))
+              (replace-match (or (nth 1
+                                      (assoc (match-string 0)
+                                             glitcherature-leet-lookup))
+                                 (match-string 0)))))))))
 
 (defun glitcherature-sub-leet (start end probability)
   "Replace letters after point or in the current region
@@ -293,11 +294,12 @@
     (save-restriction
       (narrow-to-region start end)
       (let ((column (random glitcherature-leet-kinds-count)))
-      (while (re-search-forward "[a-z]" nil t)
-        (if (= (random probability) 0)
-            (replace-match (nth column
-                                (assoc (match-string 0)
-                                       glitcherature-leet-lookup)))))))))
+        (while (re-search-forward "[a-z]" nil t)
+          (if (= (random probability) 0)
+              (replace-match (or (nth 1
+                                      (assoc (match-string 0)
+                                             glitcherature-leet-lookup))
+                                 (match-string 0)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The mode
@@ -307,12 +309,18 @@
 
 (define-key glitcherature-mode-keymap (kbd "C-c C-g b")
 'glitcherature-ascii-bin)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g c")
+  'glitcherature-random-letter-case)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g C")
+  'glitcherature-random-word-case)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g l")
   'glitcherature-sub-leet)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g o")
   'glitcherature-ocr-replace-text)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g r")
   'glitcherature-random-run)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g s")
+  'glitcherature-sub-space-runs)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g v")
   'glitcherature-sub-leet-vowels)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g w")
