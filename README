@@ -1,0 +1,38 @@
+glitcherature mode
+==================
+
+By Rob Myers <rob@robmyers.org> .
+
+Glitch text in Emacs.
+
+Inspired by Orphan Drift's novel "Cyberpositive" and OCR errors everywhere.
+
+Installation
+------------
+
+Make sure you have gocr installed (e.g. sudo apt-get install gocr ).
+
+Save glitcherature-mode.el to a directory in your Emacs load-path.
+
+Add the following to your dot emacs file:
+
+(require 'glitcherature-mode)
+
+Then either add the following to your dot emacs file:
+
+(add-hook 'text-mode-hook 'glitcherature-mode)
+
+or each time you wish to use glitcherature-mode type the following in Emacs:
+
+M-x glitcherature-mode
+
+Usage
+-----
+
+Glitcherature key commands usually work on the text in the region or after the point.
+
+Glitcherature key commands start with C-c C-g.
+
+The prefix argument usually supplies a probability, but may be used to supply a count.
+
+See the documentation for each function for more details.

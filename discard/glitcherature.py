@@ -297,31 +297,8 @@ if __name__ == "__main__":
 
 #### FEATURES
 
-# Sources: file, url, url in url, rss feed
-# BY-SA: tvtropes, Wikipedia (warn user, add license)
-# PD: gutenberg.org
-
-# Markov of order n
-
-# Most frequent words from...
-# Random text (word, words, sentence, para) from...
-
-# tf-idf
-
-# Generative grammars
-
-# Pronoun swapping
-
-# Product placement
-
-# cut-ups
-
 # Insert . or _ etc. randomly into words but not spaces
 #   So 2 complimentary functions, one to replace spaces, one letters
 # i.nternet intern_et, etc.
 
 # Line noise
-
-# Glitch across text
-
-# html - bold, italic, size, face (also latex, make general)
