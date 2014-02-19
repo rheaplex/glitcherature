@@ -29,13 +29,13 @@ M-x glitcherature-mode
 Usage
 -----
 
-Glitcherature key commands work on the text in the region. Select the text you wish to modify before using them.
+Glitcherature key commands only work on the text in the active region. Select the text you wish to modify before using them otherwise nothing will happen.
 
 Glitcherature key commands start with C-c C-g.
 
 The prefix argument usually supplies a probability, but may be used to supply a count.
 
-See the documentation for each function for more details.
+See the documentation string for each function for more details.
 
 An Example (Ulysses - http://www.gutenberg.org/ebooks/4300)
 -----------------------------------------------------------
