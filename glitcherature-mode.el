@@ -221,16 +221,16 @@
   (interactive "r\np")
   (if (region-active-p)
       (save-excursion
-    (save-restriction
-      (narrow-to-region start end)
-      (let ((prob (if (and current-prefix-arg
-                           (not (consp current-prefix-arg)))
-                      probability
-                    glitcherature-case-probability)))
-        (while (re-search-forward "\\w+" nil t)
-          (if (= (random prob) 0)
-              (replace-match (upcase (match-string 0)))
-            (replace-match (downcase (match-string 0))))))))))
+        (save-restriction
+          (narrow-to-region start end)
+          (let ((prob (if (and current-prefix-arg
+                               (not (consp current-prefix-arg)))
+                          probability
+                        glitcherature-case-probability)))
+            (while (re-search-forward "\\w+" nil t)
+              (if (= (random prob) 0)
+                  (replace-match (upcase (match-string 0)))
+                (replace-match (downcase (match-string 0))))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Binary
@@ -354,12 +354,137 @@
 ;; Auto-glitcherature
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Successive application on paragraphs
+(defun glitcherature-each-word (start end prefix to-apply)
+  "Apply a function supplied by the user to each word in the region.
+   This function will be passed the start and end of the sentence and the
+   current prefix argument."
+  (interactive "r\n\p\naFunction to apply: ")
+  ;; Save the state and set up for the entire run
+  (save-excursion
+    (save-restriction
+      (goto-char start)
+      (narrow-to-region start end)
+      (let ((from (point)))
+        (while (re-search-forward "\\(\s+\\|$\\)" (region-end) t)
+          ;; Save the state and set up for this paragraph
+          (save-excursion
+            (save-restriction
+              (skip-chars-backward "\s")
+              (let ((to (min (point) (region-end))))
+                (narrow-to-region from to)
+              (funcall to-apply from to current-prefix-arg)
+              (setf from to)))))))))
 
-;; Successive application on sentences, specify max random count of sentences
-;; as prefix argument
+(defun glitcherature-each-sentence (start end prefix to-apply)
+  "Apply a function supplied by the user to each sentence in the region.
+   This function will be passed the start and end of the sentence and the
+   current prefix argument."
+  (interactive "r\n\p\naFunction to apply: ")
+  ;; Save the state and set up for the entire run
+  (save-excursion
+    (save-restriction
+      (goto-char start)
+      (narrow-to-region start end)
+      (let ((from (point)))
+        ;; Use a slightly less structured concept of "sentence" than usual
+        (while (re-search-forward "[.!?][])}'\"]?\\(\s+\\|$\\)" (region-end) t)
+          ;; Save the state and set up for this paragraph
+          (save-excursion
+            (save-restriction
+              (skip-chars-backward "\s")
+              (let ((to (min (point) (region-end))))
+                (narrow-to-region from to)
+              (funcall to-apply from to current-prefix-arg)
+              (setf from to)))))))))
+
+(defun glitcherature-each-paragraph (start end prefix fun)
+  "Apply a function supplied by the user to each paragraph in the region.
+   This function will be passed the start and end of the paragraph and the
+   current prefix argument."
+  (interactive "r\n\p\naFunction to apply:")
+  ;; Save the state and set up for the entire run
+  (save-excursion
+    (save-restriction
+      (goto-char start)
+      (narrow-to-region start end)
+      (while (/= (point) (mark))
+        (forward-paragraph)
+        ;; Save the state for this paragraph
+        (save-excursion
+          (save-restriction
+            ;; Get the paragraph text start and end
+            (start-of-paragraph-text)
+            (let ((from (point)))
+              (end-of-paragraph-text)
+              (let ((to (point)))
+                ;; Narrow to the paragraph text
+                (goto-char from)
+                (narrow-to-region from to)
+                (funcall fun from to current-prefix-arg)))))))))
 
 ;; Recursive application, larger then smaller containing regions
+
+;; Repeated successive application
+
+;; Repeated random application
+
+;; Sort letters, split into word lengths (maintain capital positions)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sorting
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun glitcherature-sort-chars (start end ascending)
+  "Sort the characters in the region in descending order or, if there is a
+   prefix argument, in ascending order"
+  (interactive "r\np")
+  (if (region-active-p)
+      (let* ((predicate (if (and current-prefix-arg
+                                 (not (consp current-prefix-arg)))
+                            'string>
+                          'string<))
+             (text (buffer-substring-no-properties start end))
+             (new-text (apply 'concat
+                              (sort (split-string text "" t)
+                                    predicate))))
+        (delete-region start end)
+        (insert new-text))))
+
+(defun glitcherature-sort-words (start end ascending)
+  "Sort the words in the region in descending order or, if there is a
+   prefix argument, in ascending order"
+  (interactive "r\np")
+  (if (region-active-p)
+      (let* ((predicate (if (and current-prefix-arg
+                                 (not (consp current-prefix-arg)))
+                            'string>
+                          'string<))
+             (text (buffer-substring-no-properties start end))
+             (new-text (mapconcat 'identity
+                                  (sort (split-string text " ")
+                                        predicate)
+                                  " ")))
+        (delete-region start end)
+        (insert new-text))))
+
+(defun glitcherature-sort-words-length (start end descending)
+  "Sort the words in the region in ascending order of length or,
+   if there is a prefix argument, in ascending order"
+  (interactive "r\np")
+  (if (region-active-p)
+      (let* ((predicate (if (and current-prefix-arg
+                                 (not (consp current-prefix-arg)))
+                            (lambda (a b) (> (length a)
+                                             (length b)))
+                          (lambda (a b) (< (length a)
+                                           (length b)))))
+             (text (buffer-substring-no-properties start end))
+             (new-text (mapconcat 'identity
+                                  (sort (split-string text " ")
+                                        predicate)
+                                  " ")))
+        (delete-region start end)
+        (insert new-text))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 1337
@@ -458,10 +583,16 @@
   'glitcherature-random-letter-case)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g C")
   'glitcherature-random-word-case)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g e")
+  'glitcherature-each-sentence)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g E")
+  'glitcherature-each-paragraph)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g i")
   'glitcherature-spaces-insert)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g l")
   'glitcherature-sub-leet)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g L")
+  'glitcherature-sort-words-length)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g n")
   'glitcherature-newlines-insert)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g N")
@@ -478,6 +609,10 @@
   'glitcherature-sub-space-runs)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g S")
   'glitcherature-spaces-delete)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g t")
+  'glitcherature-sort-chars
+(define-key glitcherature-mode-keymap (kbd "C-c C-g T")
+  'glitcherature-sort-words)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g u")
   'glitcherature-unicode-insert)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g U")
@@ -486,6 +621,8 @@
   'glitcherature-sub-leet-vowels)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g w")
   'glitcherature-wrap-words)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g W")
+  'glitcherature-each-word)
 
 ;;;###autoload
 (define-minor-mode glitcherature-mode "Glitch text in various ways"
