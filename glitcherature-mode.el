@@ -108,9 +108,10 @@
                                    line-font-size line)))
 
 (defun glitcherature-ocr-replace-text (start end font-size)
-  "Rasterise the text in the region then OCR it, replacing the original text.
-   The size of the rasterized text is set by the prefix arg, or defaults to
-   a suitably small value (e.g. 6)."
+  "Rasterise the text in the region then perform Optical Character Recognition
+   (OCR) on the rasterised version, replacing the original text with the results.
+   The size of the rasterized text is set by the numeric prefix arg, if provided,
+   or defaults to a suitably small value (e.g. 6)."
   (interactive "r\np")
   (if (region-active-p)
       (let* ((original-text (buffer-substring-no-properties start end))
@@ -260,8 +261,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun glitcherature-spaces-delete (start end probability)
-  "Delete each space in the region 1/probability (specified as the prefix
-   argument or using a default value) of the time"
+  "Delete each space in the region 1/probability (specified as the numeric
+   prefix argument or using a default value if a numeric prefix is not
+   supplied) of the time"
   (interactive "r\np")
   (if (region-active-p)
       (let ((prob (if (and current-prefix-arg
@@ -293,22 +295,32 @@
                 (insert (fun)))))))))
 
 (defun glitcherature-newlines-insert (start end count)
-  "Insert prefix (or default) newlines into the region"
+  "Insert a number of newlines equal to the current numeric prefix
+   argument (or the default, if no prefix argument has been provided) 
+   at random positions in the region"
   (interactive "r\np")
   (glitcherature-insert-count start end count nil (lambda () "\n")))
 
 (defun glitcherature-newlines-overwrite (start end count)
-  "Replace prefix (or default) characters in the region with newlines"
+  "Insert a number of newlines equal to the current numeric prefix
+   argument (or the default, if no prefix argument has been provided) 
+   at random positions in the region, overwriting the characters already
+   at those positions"
   (interactive "r\np")
   (glitcherature-insert-count start end count t (lambda () "\n")))
 
 (defun glitcherature-spaces-insert (start end count)
-  "Insert prefix (or default) spaces into the region"
+  "Insert a number of spaces equal to the current numeric prefix
+   argument (or the default, if no prefix argument has been provided) 
+   at random positions in the region"
   (interactive "r\np")
   (glitcherature-insert-count start end count nil (lambda () " ")))
 
 (defun glitcherature-spaces-overwrite (start end count)
-  "Replace prefix (or default) with spaces into the region"
+  "Insert a number of spaces equal to the current numeric prefix
+   argument (or the default, if no prefix argument has been provided) 
+   at random positions in the region, overwriting the characters already
+   at those positions"
   (interactive "r\np")
   (glitcherature-insert-count start end count t (lambda () " ")))
 
@@ -321,22 +333,32 @@
   (format "%c" (random 4194303)))
 
 (defun glitcherature-ascii-insert (start end count)
-  "Insert prefix (or default) ascii characters into the region"
+  "Insert a number of ascii characters equal to the current numeric prefix
+   argument (or the default, if no prefix argument has been provided) 
+   at random positions in the region"
   (interactive "r\np")
   (glitcherature-insert-count start end count nil 'random-ascii-character))
 
 (defun glitcherature-ascii-overwrite (start end count)
-  "Replace prefix (or default) with ascii characters into the region"
+  "Insert a number of ascii characters equal to the current numeric prefix
+   argument (or the default, if no prefix argument has been provided) 
+   at random positions in the region, overwriting the characters already
+   at those positions"
   (interactive "r\np")
   (glitcherature-insert-count start end count t 'random-ascii-character))
 
 (defun glitcherature-unicode-insert (start end count)
-  "Insert prefix (or default) unicode characters into the region"
+  "Insert a number of ascii characters equal to the current numeric prefix
+   argument (or the default, if no prefix argument has been provided) 
+   at random positions in the region"
   (interactive "r\np")
   (glitcherature-insert-count start end count nil 'random-unicode-character))
 
 (defun glitcherature-unicode-overwrite (start end count)
-  "Replace prefix (or default) with unicode characters into the region"
+  "Insert a number of unicode characters equal to the current numeric prefix
+   argument (or the default, if no prefix argument has been provided) 
+   at random positions in the region, overwriting the characters already
+   at those positions"
   (interactive "r\np")
   (glitcherature-insert-count start end count t 'random-unicode-character))
 
@@ -349,6 +371,41 @@
 ;; Substitute typing errors then autocorrect
 
 ;; Shift % letters > unicode range (add number, convert to char)
+
+(defun glitcherature-strip-non-alnum (start end)
+  "Remove punctuation and whitespace from the region"
+  (interactive "r")
+  (if (region-active-p)
+      (save-excursion
+        (replace-regexp "[^[:alnum:]]" "" nil start end))))
+
+(defun glitcherature-copy-structure (start end)
+  "Get the current text from the front of the kill ring and apply the
+   whitespace and punctuation from it to the region.
+   This strips any existing whitespace and punctuation from the
+   region, so if the region is shorter than the number of alphanumeric
+   characters in the text in the kill ring there will be a run of
+   punctuation-free text at the end.
+   The easiest way of avoiding this is to apply a text's structure
+   to itself, e.g. after character sorting."
+  (interactive "r")
+  (if (and (region-active-p) kill-ring)
+      (let ((source-text (substring-no-properties (car kill-ring)))
+            (from 0))
+        (save-excursion
+          (save-restriction
+            (goto-char start)
+            (glitcherature-strip-non-alnum start end)
+            (narrow-to-region (point) (mark))
+            (while (and (< (point) (point-max))
+                        (string-match "[^[:alnum:]]"
+                                      source-text
+                                      from))
+              (setf from (match-end 0))
+              ;; Move to the equivalent position in the narrowed buffer region
+              (goto-char (+ (point-min) (match-beginning 0)))
+              ;; And insert the whitespace or puctuation there
+              (insert (match-string 0 source-text))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Auto-glitcherature
@@ -589,10 +646,14 @@
   'glitcherature-each-paragraph)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g i")
   'glitcherature-spaces-insert)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g k")
+  'glitcherature-copy-structure)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g l")
   'glitcherature-sub-leet)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g L")
   'glitcherature-sort-words-length)
+(define-key glitcherature-mode-keymap (kbd "C-c C-g m")
+  'glitcherature-strip-non-alnum)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g n")
   'glitcherature-newlines-insert)
 (define-key glitcherature-mode-keymap (kbd "C-c C-g N")
@@ -625,7 +686,11 @@
   'glitcherature-each-word)
 
 ;;;###autoload
-(define-minor-mode glitcherature-mode "Glitch text in various ways"
+(define-minor-mode glitcherature-mode
+  "A mode to creatively glitch text in the region in various ways.
+The following keys are bound in this minor mode:
+
+\\{glitcherature-mode-keymap}"
   :lighter " glitch"
   :keymap glitcherature-mode-keymap
   :group 'glitcherature-mode)
