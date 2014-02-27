@@ -673,25 +673,16 @@
   (let* ((functions (read-commands-loop))
          (applyfuns (funcall-random functions)))
     (glitcherature-each-paragraph start end prefix applyfuns)))
-    
-
-;; Recursive application, larger then smaller containing regions
-
-;; Repeated successive application
-
-;; Repeated random application
-
-;; Sort letters, split into word lengths (maintain capital positions)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sorting
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun nocase-string> (a b)
-  (string> (downcase a) (downcase b))
+  (string> (downcase a) (downcase b)))
   
 (defun nocase-string< (a b)
-  (string< (downcase a) (downcase b))
+  (string< (downcase a) (downcase b)))
 
 (defun glitcherature-sort-chars (start end prefix)
   "Sort the characters in the region in descending order in a case-sensitive
@@ -740,7 +731,7 @@
                                         predicate)
                                   " ")))
         (delete-region start end)
-        (insert new-text))))
+        (insert new-text)))
 
 (defun glitcherature-sort-words-length (start end descending)
   "Sort the words in the region in ascending order of length or,
@@ -859,7 +850,7 @@
 (define-key glitcherature-mode-keymap (kbd "C-c / A")
   'glitcherature-ascii-overwrite)
 (define-key glitcherature-mode-keymap (kbd "C-c / b")
-'glitcherature-ascii-bin)
+  'glitcherature-ascii-bin)
 (define-key glitcherature-mode-keymap (kbd "C-c / c")
   'glitcherature-random-letter-case)
 (define-key glitcherature-mode-keymap (kbd "C-c / C")
@@ -907,7 +898,7 @@
 (define-key glitcherature-mode-keymap (kbd "C-c / S")
   'glitcherature-spaces-delete)
 (define-key glitcherature-mode-keymap (kbd "C-c / t")
-  'glitcherature-sort-chars
+  'glitcherature-sort-chars)
 (define-key glitcherature-mode-keymap (kbd "C-c / T")
   'glitcherature-sort-words)
 (define-key glitcherature-mode-keymap (kbd "C-c / u")
