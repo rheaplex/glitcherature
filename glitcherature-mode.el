@@ -35,6 +35,16 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO:
+;; Substitute % letters, vowels, consonants
+;; Insert inappropriate hyphenation
+;; Substitute random typing errors (near letters on keyboard)
+;; Substitute typing errors then autocorrect
+;; Substitute C19th OCR errors
+;; Shift % letters > unicode range (add number, convert to char)
+;; Scramble characters
+;; Scramble words
+
 ;;; Code:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,9 +78,19 @@
   :type '(integer)
   :group 'glitcherature-mode)
 
+(defcustom glitcherature-max-fall 2
+  "The maximum amount for rain to fall"
+  :type '(integer)
+  :group 'glitcherature-mode)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utility code
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun prefix-p ()
+  "Determine whether a prefix argument was supplied"
+  (and current-prefix-arg
+       (not (consp current-prefix-arg))))
 
 (defun random-char (source)
   "Pick one character from source at random"
@@ -96,6 +116,89 @@
   (let ((chars '()))
     (dotimes (i length) (push char chars))
     (apply 'concat chars)))
+
+(defun random-element (source)
+  "Pick one element from source at random"
+  (nth (random (length source)) source))
+
+(defun read-commands-count (count)
+  "Prompt the user for the given number of functions, returning the
+   resulting function symbols as a list. If the user presses return with
+   no input then the list will be shorter than requested or may even be
+   nil"
+  (let ((functions ())
+        (current 0))
+    (while (< current count)
+      (let ((fun (read-command (format "Enter command name (%s/%s, or empty to finish): "
+                                       (+ current 1) count)
+                               "")))
+        ;; If the user provided a function
+        (if (not (string= fun ""))
+            (progn
+              ;; Add it to the list
+              (setq functions (append functions (list fun)))
+              (setq current (+ current 1)))
+          ;; Otherwise don't prompt for any more
+          (setq current count))))
+    functions))
+
+(defun read-commands-loop ()
+  "Repeatedly prompt the user for functions until the user presses return 
+   with no text entered to end. Return the list of function symbols, which
+   may be nil if the user finished before entering any function names"
+  (let ((functions ())
+        (read-more-functions t))
+    (while read-more-functions
+      (let ((fun (read-command "Enter command name (empty to finish): "
+                               "")))
+        ;; If the user entered a function, append it to the list
+        (if (not (string= fun ""))
+            (setq functions (append functions (list fun)))
+          ;; Otherwise finish looping
+          (setq read-more-functions nil))))
+    functions))
+
+(defun read-commands (count)
+  "If count is zero, call read-commands-loop. Otherwise call
+   read-commands-count. Return the resulting list of function symbols, or nil
+   if the user finishes before entering any function names."
+  (if (= count 0)
+      (read-commands-count count)
+    (read-commands)))
+
+(defun get-column (start end column)
+  "Get a column of text from the buffer"
+  (let ((chars '()))
+    (save-excursion
+      (goto-char start)
+      (while (not (eobp))
+        (forward-char column)
+        (setq chars (append chars (list (following-char))))
+        (forward-line)))
+    (concat chars)))
+
+(defun rotate-string (source offset)
+  "Rotate a string clockwise by offset"
+  (let ((source-length (length source))
+        (chars '()))
+    (dotimes (i source-length)
+      (let ((index (mod (+ i offset) source-length)))
+        (setf chars (append chars (list (substring source index (+ index 1)))))))
+    (apply 'concat chars)))
+
+(defun rotate-column (from to column amount)
+  "Move the characters in the column down by the given amount. This assumes
+   that from is the start of a line, and that every line contains at least
+   column characters"
+  (let ((new-column-text (rotate-string (get-column from to column) amount)))
+    (save-excursion
+      (goto-char from)
+      (mapc (lambda (char)
+              (forward-char column)
+              (delete-char 1)
+              (insert char)
+              (forward-line))
+            new-column-text))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OCR Text substitution
@@ -127,6 +230,45 @@
                              "")))
         (delete-region start end)
         (insert glitched-text))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rendering
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun glitcherature-fill-region (start end fill-column)
+  "Reformat the region so that each line is fill-column columns
+   in length. Space-pad the end of the line if needed"
+  (interactive "r\np")
+  (if (region-active-p)
+      (fill-region start end)
+    (save-excursion
+      (goto-char start)
+      (while (< (point) (region-end))
+        (end-of-line)
+        (insert (make-string (- fill-column (current-column))  ?\s))
+        (forward-line)))))
+
+(defun glitcherature-digital-rain (start end max-fall-prefix)
+  "Reformat the text into a grid of characters of a width equal to the column
+   count configuration variable. Then randomly slide each column down (looping
+   around) an amount between 0 and the numeric prefix (if supplied) or 50% of
+   the line count (if not)"
+  (interactive "r\np")
+  (if (region-active-p)
+      (save-excursion
+        (goto-char start)
+        ;; If first line isn't selected from the start, complain
+        (if (not (= (current-column) 0))
+            (message "Make sure you select the start of the first line.")
+          (save-restriction
+            ;;(narrow-to-region start end)
+            (glitcherature-fill-region start end glitcherature-line-length)
+            (let ((max-fall (if (and current-prefix-arg
+                                     (not (consp current-prefix-arg)))
+                                max-fall-prefix
+                              glitcherature-max-fall)))
+              (dotimes (column glitcherature-line-length)
+                (rotate-column start end column (random max-fall)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Runs
@@ -362,16 +504,6 @@
   (interactive "r\np")
   (glitcherature-insert-count start end count t 'random-unicode-character))
 
-;; Substiture % letters, vowels, consonants
-
-;; Insert inappropriate hyphenation
-
-;; Substitute random typing errors (near letters on keyboard)
-
-;; Substitute typing errors then autocorrect
-
-;; Shift % letters > unicode range (add number, convert to char)
-
 (defun glitcherature-strip-non-alnum (start end)
   "Remove punctuation and whitespace from the region"
   (interactive "r")
@@ -479,6 +611,70 @@
                 (narrow-to-region from to)
                 (funcall fun from to current-prefix-arg)))))))))
 
+(defun funcall-random (functions)
+  "Return a function that will randomly call one of the functions with the
+   parameters from to current-prefix-art"
+  (lambda (from to current-prefix-arg)
+    (funcall (random-element functions) from to current-prefix-arg)))
+
+(defun funcall-sequential (functions)
+  "Return a function that will sequentially call the functions with the
+   parameters from to current-prefix-art"
+  (let ((numfuns (length functions))
+        (count 0))
+    (lambda (from to current-prefix-arg)
+      (funcall (nth (mod count numfuns) functions) from to current-prefix-arg)
+      (setq count (+ count 1)))))
+
+(defun glitcherature-each-word-sequential-fun (start end prefix)
+  "Prompt the user for commands to call, then call them sequentially on each
+   word in the region"
+  (interactive "r\n\p")
+  (let* ((functions (read-commands-loop))
+         (applyfuns (funcall-random functions)))
+    (glitcherature-each-word start end prefix applyfuns)))
+
+(defun glitcherature-each-sentence-sequential-fun (start end prefix)
+  "Prompt the user for commands to call, then call them sequentially on each
+   sentence in the region"
+  (interactive "r\n\p")
+  (let* ((functions (read-commands-loop))
+         (applyfuns (funcall-random functions)))
+    (glitcherature-each-sentence start end prefix applyfuns)))
+
+(defun glitcherature-each-paragraph-sequential-fun (start end prefix)
+  "Prompt the user for commands to call, then call them sequentially on each
+   paragraph in the region"
+  (interactive "r\n\p")
+  (let* ((functions (read-commands-loop))
+         (applyfuns (funcall-random functions)))
+    (glitcherature-each-paragraph start end prefix applyfuns)))
+
+(defun glitcherature-each-word-random-fun (start end prefix)
+  "Prompt the user for commands to call, then call them randomly on each
+   word in the region"
+  (interactive "r\n\p")
+  (let* ((functions (read-commands-loop))
+         (applyfuns (funcall-random functions)))
+    (glitcherature-each-word start end prefix applyfuns)))
+
+(defun glitcherature-each-sentence-random-fun (start end prefix)
+  "Prompt the user for commands to call, then call them randomly on each
+   sentence in the region"
+  (interactive "r\n\p")
+  (let* ((functions (read-commands-loop))
+         (applyfuns (funcall-random functions)))
+    (glitcherature-each-sentence start end prefix applyfuns)))
+
+(defun glitcherature-each-paragraph-random-fun (start end prefix)
+  "Prompt the user for commands to call, then call them randomly on each
+   paragraph in the region"
+  (interactive "r\n\p")
+  (let* ((functions (read-commands-loop))
+         (applyfuns (funcall-random functions)))
+    (glitcherature-each-paragraph start end prefix applyfuns)))
+    
+
 ;; Recursive application, larger then smaller containing regions
 
 ;; Repeated successive application
@@ -491,31 +687,53 @@
 ;; Sorting
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun glitcherature-sort-chars (start end ascending)
-  "Sort the characters in the region in descending order or, if there is a
-   prefix argument, in ascending order"
+(defun nocase-string> (a b)
+  (string> (downcase a) (downcase b))
+  
+(defun nocase-string< (a b)
+  (string< (downcase a) (downcase b))
+
+(defun glitcherature-sort-chars (start end prefix)
+  "Sort the characters in the region in descending order in a case-sensitive
+   way. Or, if there is a prefix argument:
+   0 in ascending order
+   1 in a case-insensitive way
+   2 in ascending order in a case-insensitive way"
   (interactive "r\np")
   (if (region-active-p)
-      (let* ((predicate (if (and current-prefix-arg
-                                 (not (consp current-prefix-arg)))
-                            'string>
-                          'string<))
-             (text (buffer-substring-no-properties start end))
-             (new-text (apply 'concat
-                              (sort (split-string text "" t)
-                                    predicate))))
+      (let* ((predicate (if (prefix-p)
+                            (cond ((= prefix 0)
+                                   (setf predicate 'string>))
+                                  ((= prefix 1)
+                                   (setf predicate 'nocase-string<))
+                                  ((= prefix 2)
+                                   (setf predicate 'nocase-string>))
+                                  (t 'string<))
+                          'string<)))
+        (text (buffer-substring-no-properties start end))
+        (new-text (apply 'concat
+                         (sort (split-string text "" t)
+                               predicate)))
         (delete-region start end)
         (insert new-text))))
 
-(defun glitcherature-sort-words (start end ascending)
-  "Sort the words in the region in descending order or, if there is a
-   prefix argument, in ascending order"
+(defun glitcherature-sort-words (start end prefix)
+  "Sort the words in the region in descending order in a case-sensitive
+   way. Or, if there is a prefix argument:
+   0 in ascending order
+   1 in a case-insensitive way
+   2 in ascending order in a case-insensitive way"
   (interactive "r\np")
   (if (region-active-p)
-      (let* ((predicate (if (and current-prefix-arg
-                                 (not (consp current-prefix-arg)))
-                            'string>
-                          'string<))
+      (let* ((predicate (if (prefix-p)
+                            (cond ((= prefix 0)
+                                   (setf predicate 'string>))
+                                  ((= prefix 1)
+                                   (setf predicate 'nocase-string<))
+                                  ((= prefix 2)
+                                   (setf predicate 'nocase-string>))
+                                  (t 'string<))
+                          'string<)))
              (text (buffer-substring-no-properties start end))
              (new-text (mapconcat 'identity
                                   (sort (split-string text " ")
@@ -630,60 +848,80 @@
 
 (defconst glitcherature-mode-keymap (make-keymap))
 
-(define-key glitcherature-mode-keymap (kbd "C-c C-g a")
+;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Keymaps-and-Minor-Modes.html#Keymaps-and-Minor-Modes
+;; We use C-c / as our prefix, and gradually less meaningful single letters
+;; to identify commands. Two or three letter sequences might be clearer,
+;; but would take longer to type. I can revisit this in the case of user
+;; revolt.
+
+(define-key glitcherature-mode-keymap (kbd "C-c / a")
   'glitcherature-ascii-insert)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g A")
+(define-key glitcherature-mode-keymap (kbd "C-c / A")
   'glitcherature-ascii-overwrite)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g b")
+(define-key glitcherature-mode-keymap (kbd "C-c / b")
 'glitcherature-ascii-bin)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g c")
+(define-key glitcherature-mode-keymap (kbd "C-c / c")
   'glitcherature-random-letter-case)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g C")
+(define-key glitcherature-mode-keymap (kbd "C-c / C")
   'glitcherature-random-word-case)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g e")
+(define-key glitcherature-mode-keymap (kbd "C-c / e")
   'glitcherature-each-sentence)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g E")
+(define-key glitcherature-mode-keymap (kbd "C-c / E")
   'glitcherature-each-paragraph)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g i")
+(define-key glitcherature-mode-keymap (kbd "C-c / f")
+  'glitcherature-each-word-sequential-fun)
+(define-key glitcherature-mode-keymap (kbd "C-c / F")
+  'glitcherature-each-word-random-fun)
+(define-key glitcherature-mode-keymap (kbd "C-c / i")
   'glitcherature-spaces-insert)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g k")
+(define-key glitcherature-mode-keymap (kbd "C-c / k")
   'glitcherature-copy-structure)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g l")
+(define-key glitcherature-mode-keymap (kbd "C-c / l")
   'glitcherature-sub-leet)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g L")
+(define-key glitcherature-mode-keymap (kbd "C-c / L")
   'glitcherature-sort-words-length)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g m")
+(define-key glitcherature-mode-keymap (kbd "C-c / m")
   'glitcherature-strip-non-alnum)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g n")
+(define-key glitcherature-mode-keymap (kbd "C-c / n")
   'glitcherature-newlines-insert)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g N")
+(define-key glitcherature-mode-keymap (kbd "C-c / N")
   'glitcherature-newlines-overwrite)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g o")
+(define-key glitcherature-mode-keymap (kbd "C-c / o")
   'glitcherature-ocr-replace-text)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g O")
+(define-key glitcherature-mode-keymap (kbd "C-c / O")
   'glitcherature-spaces-overwrite)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g r")
+(define-key glitcherature-mode-keymap (kbd "C-c / p")
+  'glitcherature-each-paragraph-sequential-fun)
+(define-key glitcherature-mode-keymap (kbd "C-c / P")
+  'glitcherature-each-paragraph-random-fun)
+(define-key glitcherature-mode-keymap (kbd "C-c / q")
+  'glitcherature-each-sentence-sequential-fun)
+(define-key glitcherature-mode-keymap (kbd "C-c / Q")
+  'glitcherature-each-sentence-random-fun)
+(define-key glitcherature-mode-keymap (kbd "C-c / r")
   'glitcherature-random-run)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g R")
+(define-key glitcherature-mode-keymap (kbd "C-c / R")
   'glitcherature-repeat-run)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g s")
+(define-key glitcherature-mode-keymap (kbd "C-c / s")
   'glitcherature-sub-space-runs)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g S")
+(define-key glitcherature-mode-keymap (kbd "C-c / S")
   'glitcherature-spaces-delete)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g t")
+(define-key glitcherature-mode-keymap (kbd "C-c / t")
   'glitcherature-sort-chars
-(define-key glitcherature-mode-keymap (kbd "C-c C-g T")
+(define-key glitcherature-mode-keymap (kbd "C-c / T")
   'glitcherature-sort-words)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g u")
+(define-key glitcherature-mode-keymap (kbd "C-c / u")
   'glitcherature-unicode-insert)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g U")
+(define-key glitcherature-mode-keymap (kbd "C-c / U")
   'glitcherature-unicode-overwrite)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g v")
+(define-key glitcherature-mode-keymap (kbd "C-c / v")
   'glitcherature-sub-leet-vowels)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g w")
+(define-key glitcherature-mode-keymap (kbd "C-c / w")
   'glitcherature-wrap-words)
-(define-key glitcherature-mode-keymap (kbd "C-c C-g W")
+(define-key glitcherature-mode-keymap (kbd "C-c / W")
   'glitcherature-each-word)
+(define-key glitcherature-mode-keymap (kbd "C-c / x")
+  'glitcherature-digital-rain)
 
 ;;;###autoload
 (define-minor-mode glitcherature-mode
